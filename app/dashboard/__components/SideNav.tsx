@@ -209,12 +209,7 @@ export default function SideNav({
         </nav>
 
         {/* Logout Button */}
-        <button
-          onClick={handleLogout}
-          className="mt-auto flex items-center gap-3 px-3 py-2 rounded-xl bg-red-600/60 text-white hover:bg-red-500 transition-all text-sm sm:text-base"
-        >
-          <LogOut className="w-5 h-5" /> Logout
-        </button>
+        
       </motion.aside>
     </>
   );

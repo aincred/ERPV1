@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 
 type AssetForm = {
+  id?: string;
+  submittedAt?: string;
   acceptType: string;
   assetType: string;
   manufacturer: string;
@@ -22,10 +24,29 @@ export default function SubmissionsPage() {
   const [photoView, setPhotoView] = useState<string | null>(null);
 
   useEffect(() => {
-    const data = localStorage.getItem("submissions");
-    if (data) {
-      setSubmissions(JSON.parse(data));
-    }
+    const fetchSubmissions = async () => {
+      try {
+        const res = await fetch("/api/asset-submissions");
+        const json = await res.json();
+        if (res.ok && json.success && Array.isArray(json.submissions)) {
+          setSubmissions(json.submissions);
+          return;
+        }
+        console.error("Failed to fetch submissions from API:", json);
+      } catch (err) {
+        console.error("Error fetching submissions:", err);
+      }
+      // fallback to localStorage if API fails
+      const data = localStorage.getItem("submissions");
+      if (data) {
+        try {
+          setSubmissions(JSON.parse(data));
+        } catch {
+          setSubmissions([]);
+        }
+      }
+    };
+    fetchSubmissions();
   }, []);
 
   const getLabel = (key: string) => {

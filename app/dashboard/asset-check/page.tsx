@@ -1,3 +1,5 @@
+// app\dashboard\asset-check
+
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
@@ -201,6 +203,46 @@ export default function AssetCheckPage() {
     }
   };
 };
+  // Replace inline submit with API call
+  const handleSubmit = async () => {
+    if (!form.acceptType || !form.assetType || !form.manufacturer) {
+      toast.error("Please fill Accept Type, Asset Type, and Manufacturer", {
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      toast.loading("Submitting...", { id: "submit" });
+      const res = await fetch("/api/asset-submissions", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+
+      const data = await res.json();
+      toast.dismiss("submit");
+
+      if (!res.ok || !data?.success) {
+        console.error("Submission failed:", data);
+        toast.error("Failed to submit. Check console for details.");
+        return;
+      }
+
+      toast.success("✅ Form submitted and saved successfully!", { duration: 3000 });
+
+      // cleanup persistence
+      localStorage.removeItem("savedForm");
+      localStorage.removeItem("capturedPhoto");
+      localStorage.removeItem("capturedField");
+      localStorage.removeItem("expandedState");
+    } catch (err) {
+      toast.dismiss("submit");
+      console.error("Submit error:", err);
+      toast.error("Unexpected error during submission.");
+    }
+  };
+
   return (
     <>
       <Toaster position="top-right" />
@@ -263,7 +305,7 @@ export default function AssetCheckPage() {
                 className="w-full p-2 bg-gray-800 border border-gray-700 rounded-lg focus:ring-2 focus:ring-cyan-400"
               />
             </div>
-            
+
             {/* MAC & IP */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -498,40 +540,7 @@ export default function AssetCheckPage() {
             <div className="mt-6 flex justify-center">
               <button
                 type="button"
-                onClick={() => {
-                  if (!form.acceptType || !form.assetType || !form.manufacturer) {
-                    toast.error("Please fill Accept Type, Asset Type, and Manufacturer", {
-                      duration: 3000,
-                    });
-                    return;
-                  }
-
-                  const securityChecks: Record<string, any> = {};
-                  Object.keys(form).forEach((key) => {
-                    if (key.endsWith("_photo") || key.endsWith("_cameraPhoto")) {
-                      const baseKey = key.replace(/_(photo|cameraPhoto)/, "");
-                      if (!securityChecks[baseKey]) securityChecks[baseKey] = {};
-                      securityChecks[baseKey].photo = form[key];
-                    }
-                  });
-
-                  const submission = {
-                    ...form,
-                    securityChecks,
-                    submittedAt: new Date().toLocaleString(),
-                  };
-
-                  const existing = JSON.parse(localStorage.getItem("submissions") || "[]");
-                  existing.push(submission);
-                  localStorage.setItem("submissions", JSON.stringify(existing));
-
-                  toast.success("✅ Form submitted and saved successfully!", { duration: 3000 });
-
-                  localStorage.removeItem("savedForm");
-                  localStorage.removeItem("capturedPhoto");
-                  localStorage.removeItem("capturedField");
-                  localStorage.removeItem("expandedState");
-                }}
+                onClick={handleSubmit} // <-- use new API-backed handler
                 className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-blue-500 hover:to-cyan-500 text-white font-bold rounded-xl shadow-lg shadow-cyan-500/50 hover:scale-105 transform transition-all duration-300"
               >
                 🚀 Submit
@@ -553,4 +562,5 @@ export default function AssetCheckPage() {
     </>
   );
 }
+
 

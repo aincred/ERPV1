@@ -13,7 +13,7 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-bold mb-4">Welcome to Your Dashboard 🚀</h1>
       <p className="text-gray-400">
         Use the sidebar to navigate through your dashboard sections.  
-        Try visiting the <span className="text-cyan-400 font-semibold">Gallery</span> page to upload photos!
+        Try visiting the <span className="text-cyan-400 font-semibold">asset-checky</span> page to upload ERP!
       </p>
     </motion.div>
   );

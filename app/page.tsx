@@ -10,18 +10,37 @@ import { User } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("test@example.com");
-  const [password, setPassword] = useState("password123");
+  // prefill with seeded admin credentials (change or remove in production)
+  const [email, setEmail] = useState("admin@dreamworks.com");
+  const [password, setPassword] = useState("test123");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
-    // Simple demo validation
-    if (email === "test@example.com" && password === "password123") {
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const json = await res.json();
+      setLoading(false);
+
+      if (!res.ok || !json.success) {
+        setError(json?.error || "Login failed");
+        return;
+      }
+
+      // success -> redirect (cookie set by server)
       router.push("/dashboard");
-    } else {
-      setError("Invalid email or password!");
+    } catch (err) {
+      console.error("Login request error:", err);
+      setLoading(false);
+      setError("Unexpected error");
     }
   };
 
